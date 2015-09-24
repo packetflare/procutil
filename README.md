@@ -2,7 +2,7 @@
 Lists processes and their related TCP connections (in native python). Must be root.
 
 ```
-import procutil
+>>> import procutil
 >>> for c in procutil.connections() :
 ...    print c
 ... 
