@@ -1,4 +1,5 @@
 import os
+import os.path
 import re
 import socket
 import struct
@@ -67,7 +68,6 @@ def connections() :
     entries = [line.split() for line in lines[1:]]
 
     inodes = inode_table()
-
     retval = []
 
     for entry in entries :
@@ -78,10 +78,18 @@ def connections() :
 
         local_address =  decode_address(local)
         remote_address = decode_address(remote)
-        pid = inodes[inode][0]
-        proc_name  = open('/proc/' + pid + '/comm').read().rstrip()
-
-
-        retval.append({'proc' : proc_name, 'local' : local_address, 'remote' : remote_address})
+        if inodes[inode]:
+            pid = inodes[inode][0]
+            if os.path.isfile('/proc/' + pid + '/comm'):
+                proc_name  = open('/proc/' + pid + '/comm').read().rstrip()
+            else:
+                statfile = open('/proc/' + pid + '/stat')
+                try:
+                    proc_name = statfile.readline().rstrip().split()[1].strip('()')
+                finally:
+                    statfile.close()
+            if not proc_name:
+                proc_name = ''
+            retval.append({'proc' : proc_name, 'local' : local_address, 'remote' : remote_address})
 
     return retval
